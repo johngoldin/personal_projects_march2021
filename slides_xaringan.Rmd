@@ -1,0 +1,321 @@
+---
+title: "Personal Projects"
+author: 
+  - "John Goldin"
+date: '`r format(Sys.Date(),"%A, %B %d")`'
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      slideNumberFormat: "%current%" 
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  fig.width=9, fig.height=3.5, fig.retina=3,
+  out.width = "100%",
+  cache = FALSE,
+  echo = TRUE,
+  message = FALSE, 
+  warning = FALSE,
+  fig.show = TRUE,
+  hiline = TRUE
+)
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#1381B0",
+  secondary_color = "#FF961C",
+  inverse_header_color = "#FFFFFF"
+)
+```
+
+<br><br>
+### Motto for this talk:
+<br>
+
+# What can you do when you're retired...
+
+--
+
+# ...anything you want
+
+---
+### Topics
+
+### Having a personal presence on the web
+
+### An abundance of data via API's
+
+### My current deep dive into the Apple Health Export
+
+---
+## Having a Presence on the Web
+### Why?
+
+####"Publication precipitates reality." -- Lila Freedman, former editor of the Yale Blue Book
+#####My blog: [johngoldin.com](https://www.johngoldin.com)
+--
+
+####Feeling part of a larger world
++ Google [American walker in Britain](https://www.google.com/search?q=American+walker+in+britain)
++ Google ["Apple Health Export"](https://www.google.com/search?q=%22apple+health+export%22)
+--
+
+####Professional visibility (not so relevant for a retiree, and maybe a risk for others)
+--
+
+###Caveats:
+
+####Web is very public: most of your Yale work is, at best, semi-private
+
+---
+## Publishing to the Web
+
+I've created some notes to accompany this talk. They are available at    
+
+https://goldin-projects-2021.netlify.app/
+
+The notes point you to a video by Alison Hill & Desirée De Leon that describe a
+number of ways to use RMarkdown to publish to the web. The first and simplest
+technique was used to create the notes page. 
+
+1. Knit an RMarkdown document 
+2. Sign into Netlify.com 
+1. Drag the folder containing the project onto the deploy
+page in Netlify
+
+When first deployed, Netlify creates an
+arbitray name for the URL. But I have the option to change it,
+provided I can supply a name that hasn't already been used.
+
+There are lots of other ways to have a presence on the Web,
+such as LinkedIn, Twitter, Instagram, Flickr, and so on.
+
+---
+## Where To Find Some Data
+
+### Getting data via web API's
+
++ Connecticut and CDC [Covid-19 data](https://data.ct.gov/browse?tags=covid-19) (via RSocrata)
+
+```{r socrata_example, eval = FALSE, echo = TRUE}
+dph_counties <- read.socrata("https://data.ct.gov/resource/bfnu-rgqt.json",
+                            app_token = Sys.getenv("CTDATA_APP1_TOKEN")) %>%
+  as_tibble() %>%
+  rename(cases = totalcases, deaths = totaldeaths) %>%
+  mutate(date = as_date(dateupdated),
+         cases = as.numeric(cases), deaths = as.numeric(deaths),
+         tests = NA_real_, tests_positive = NA_real_,
+         hospital = as.numeric(hospitalization),
+         confirmedcases = as.numeric(confirmedcases),
+         confirmeddeaths = as.numeric(confirmeddeaths),
+         probablecases = as.numeric(probablecases),
+         probabledeaths = as.numeric(probabledeaths)) %>%
+  select(-dateupdated, -hospitalization)
+```
+
+---
+## An API is much easier to use if there is an R package that manages it
+
+Some examples:
+
+US Census: [tidycensus](https://walker-data.com/tidycensus/) 
+and [tigris](https://github.com/walkerke/tigris)
+
+Twitter: [twitteR](https://cran.r-project.org/web/packages/twitteR/twitteR.pdf) or [rtweet](https://docs.ropensci.org/rtweet/)
+
+[FRED](https://fred.stlouisfed.org/) economic stats: [fredr](http://sboysel.github.io/fredr/articles/fredr.html)
+
+
+More links in the notes at [goldin-projects-2021.netlify.app](https://goldin-projects-2021.netlify.app/)
+
+```{r libd, message = FALSE, warning = FALSE, echo = FALSE}
+library(tidyverse)
+library(lubridate)
+library(kableExtra)
+library(janitor)
+library(scales)
+path_saved_export <- "~/Dropbox/Programming/R_Stuff/john_vitals/Apple-Health-Data/"
+path_to_healthexport1 <- "~/Documents/R_local_repos/applehealth1/R/"
+```
+```{r load_health_df, message = FALSE, warning = FALSE, echo = FALSE, cache = TRUE}
+load(paste0(path_saved_export,"save_processed_export.RData"))
+```
+
+---
+#### I don't need no stinkin' guvment databases to satisfy my data anlysis habit.
+
+#### I've got almost three million rows of data in my pocket!
+
+--
+
+I did a [blog post](https://johngoldin.com/2020/02/apple-health-export-part-i/) 
+last winter describes how to export Apple Health Export and load it into R.
+
+---
+### What's in the Apple Health Export dataset?
+
+.pull-left[
+```{r basic_table, echo = FALSE, message = TRUE}
+for_table <- health_df %>%
+  tabyl(category) %>%
+  arrange(desc(n)) %>%
+  janitor::adorn_totals("row") %>% # do column total after arrange
+  mutate(percent = scales::percent(round(percent, 2), 1))
+  # janitor::adorn_totals("col") %>%  arrange(desc(Total)) %>%
+```
+```{r basic_table-left, echo = FALSE, message = TRUE}
+  kable(for_table[1:10,], format.args = list(decimal.mark = " ", big.mark = ","),
+        align = c("lrr"),
+        # table.attr='class="myTable"',
+        caption = "Frequency Data by Category", format = "html") %>%
+  kable_styling()
+        # caption = "Frequency Data by Category")
+```
+
+]
+.pull-right[ 
+```{r basic_table-right, echo = FALSE, message = TRUE}
+  # had to explicitly convert tabyl to tibble if not starting from row 1
+  kable(for_table[11:nrow(for_table),] %>% as_tibble(), format.args = list(decimal.mark = " ", big.mark = ",", row.names = FALSE),
+        align = c("lrr"),
+        # table.attr='class="myTable"',
+        caption = "Frequency Data by Category", format = "html") %>%
+  kable_styling()
+        # caption = "Frequency by Category of Data")
+```
+]
+
+<br>
+More detail about types of data shown in the notes at [goldin-projects-2021.netlify.app](https://goldin-projects-2021.netlify.app/)
+
+``` 
+
+
+```{r hr_boundaries, echo = FALSE, message = FALSE, cache = TRUE}
+hr <- health_df %>% 
+  filter(type == "RestingHeartRate")
+
+hr_versions <- unique(hr %>% filter(str_detect(sourceName, "Watch"), !is.na(sourceVersion)) %>% 
+                     select(sourceVersion)) %>% 
+                     separate(sourceVersion, into = c("major", "minor", "subminor"), remove = FALSE) %>% 
+  mutate(subminor = ifelse(is.na(subminor), "0", subminor)) %>% 
+  arrange(sourceVersion)
+
+hr_boundaries <- hr %>% 
+  left_join(hr_versions, by = "sourceVersion") %>% 
+  arrange(sourceVersion, local_start, creationDate) %>% 
+  group_by(sourceVersion, major, minor, subminor) %>% 
+  summarise(first_date = first(local_start), last_date = last(local_start))
+
+hr_boundaries <- hr_boundaries %>% 
+  ungroup() %>% 
+  arrange(first_date) %>% 
+  mutate(test = lag(major),
+         test2 = lead(major),
+    level = case_when(
+    major != lag(major) ~ 3,
+    minor != lag(minor) ~ 2, 
+    subminor != lag(subminor) ~ 1,
+    TRUE ~ NA_real_
+  ))
+p_noversion1 <- ggplot(data = hr, aes(x = local_date, y = value)) +
+  ylab("resting heart rate") + xlab(NULL) +
+  ggtitle("Resting Heart Rate by Day") +
+  geom_point(size = 0.5) 
+p_noversion2 <- p_noversion1 +
+  geom_smooth()
+p_version1 <- p_noversion1 +
+  geom_vline(data = hr_boundaries %>% filter(level == 3), 
+             aes(xintercept = as_date(first_date)), size = 1, colour = "seagreen3") +
+  geom_vline(data = hr_boundaries %>% filter(level == 2), 
+             aes(xintercept = as_date(first_date)), size = 0.3, colour = "seagreen2") 
+big_change <- hr_boundaries$first_date[hr_boundaries$sourceVersion == "7.0"] %>% as_date()
+p_version2 <- p_version1 +
+  geom_smooth(data = hr %>% filter(local_date < big_change)) +
+  geom_smooth(data = hr %>% filter(local_date >= big_change)) 
+
+```
+```{r vo2max, echo = FALSE, message = FALSE, cache = TRUE}
+vo2max <- health_df %>% 
+  filter(type == "VO2Max")
+vo_versions <- unique(vo2max %>% filter(type == "VO2Max", !is.na(sourceVersion)) %>% 
+                     select(sourceVersion)) %>% 
+                     separate(sourceVersion, into = c("major", "minor", "subminor"), remove = FALSE) %>% 
+  mutate(subminor = ifelse(is.na(subminor), "0", subminor), major = as.numeric(major),
+         minor = as.numeric(minor), subminor = as.numeric(subminor)) %>% 
+  arrange(major, minor, subminor)
+vo2max2 <- vo2max %>% 
+  left_join(vo_versions, by = "sourceVersion") %>% 
+  arrange(sourceVersion, local_start, creationDate)
+vo_boundaries <- vo2max2 %>% 
+  group_by(major, minor, subminor) %>% 
+  summarise(first_date = first(local_start), last_date = last(local_start))
+
+vo_boundaries <- vo_boundaries %>% 
+  ungroup() %>% 
+  arrange(first_date) %>% 
+  mutate(test = lag(major),
+         test2 = lead(major),
+    level = case_when(
+    (major != lag(major)) | ((major > 0) & is.na(lag(major))) ~ 3,
+    is.na(lag(major)) ~ 0,
+    minor != lag(minor) ~ 2,
+    subminor != lag(subminor) ~ 1,
+    TRUE ~ NA_real_
+  ))
+p_vo2max1 <- ggplot(data = vo2max, aes(x = local_date, y = value)) +
+  ylab("VO2 Max") + xlab(NULL) +
+  ggtitle("Estimated VO2 Max") +
+  geom_point(size = 0.5) 
+p_vo2max2 <- p_vo2max1 # no smooth
+p_vo2max3 <- p_vo2max2 +
+  geom_vline(data = vo_boundaries %>% filter(level == 3), 
+             aes(xintercept = as_date(first_date)), size = 1, colour = "goldenrod1") +
+  geom_vline(data = vo_boundaries %>% filter(level == 2), 
+             aes(xintercept = as_date(first_date)), size = 0.3, colour = "goldenrod3") +
+  geom_vline(data = hr_boundaries %>% filter(level == 3), 
+             aes(xintercept = as_date(first_date)), size = 1, colour = "seagreen3") +
+  geom_vline(data = hr_boundaries %>% filter(level == 2), 
+             aes(xintercept = as_date(first_date)), size = 0.3, colour = "seagreen2") 
+```
+
+---
+```{r, echo = FALSE, message = FALSE}
+print(p_noversion1)
+```
+
+---
+```{r, echo = FALSE, message = FALSE}
+print(p_noversion2)
+```
+
+---
+```{r, echo = FALSE, message = FALSE}
+print(p_version1)
+```
+---
+```{r, echo = FALSE, message = FALSE}
+print(p_version2)
+```
+
+
+---
+```{r , echo = FALSE, message = FALSE}
+print(p_vo2max1)
+```
+
+---
+```{r , echo = FALSE, message = FALSE}
+print(p_vo2max3)
+```
+
+

@@ -1,0 +1,167 @@
+---
+title: "Some Personal Projects"
+author: "John Goldin"
+date: "3/16/2021"
+output: 
+  html_document:
+    theme: flatly
+    toc: TRUE
+    toc_depth: 3
+    toc_float: 
+      collapsed: FALSE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+## Notes to Accompany My Talk on Personal Projects
+
+### Having a Presence on the Web
+
+Me: [johngoldin.com](https://www.johngoldin.com)
+
+I am very R oriented so I'm using RMarkdown, blogdown, and
+web hosting via [Netlify](https://www.netlify.com). Years ago I had a
+[WordPress](https://wordpress.com) blog, but I don't
+know anything about that world these days.
+
+For a good introduction to publishing to the web using RStudio
+and RMarkdown, see 
+[How to Get Your Materials Online With R Markdown](https://www.youtube.com/watch?v=QcE4RBH2auQ)
+by Alison Hill and Desirée De Leon.
+Their tutorial shows several techniques:
+
+- a single RMarkdown document as a web page
+
+- a simple RMarkdown web site (at 8:00 in the video)
+
+- using the RStudio package [distill](https://rstudio.github.io/distill/) to publish a simple web site (at 17:09 on the video)
+
+- using [bookdown](https://www.bookdown.org) to publish a book (e.g., [R for Data Science](https://r4ds.had.co.nz)) (at 23:46 on the video)
+
+- using [blogdown](https://bookdown.org/yihui/blogdown/) and 
+[Hugo](https://gohugo.io) to create a blog site (at 34:03 on the video)
+
+  For a full-featured blog using Hugo, see Alison Hill's post [Up and Running with blogdown](https://alison.rbind.io/post/2017-06-12-up-and-running-with-blogdown/) 
+
+This web page was deployed via the first (and simplest) technique described in their video. 
+I dragged
+the project folder containing the RMarkdown html code and dropped it on the Netlify page
+to deploy it. Initially it had an arbitrary name created by Netlify, 
+but I was able to change it to
+[https://goldin-projects-2021.netlify.app/](https://goldin-projects-2021.netlify.app/).
+
+At the top of the RMarkdown file that created this page, I included the
+following line:
+
+  `<META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">`
+
+This tells search engines to skip over this page and should keep it out of search
+results. That might be useful if you have created a lighthearted page that you
+would rather not turn up when you apply for some position in the future 
+(or run for president).
+
+### Mining Publicly Available Data via Web API's
+
+In the R world there are many packages that provide functions to facilitate
+using particular Web API's. For example, [tidycensus](https://walker-data.com/tidycensus/) 
+and [tigris](https://github.com/walkerke/tigris) make it 
+dramatically easier to access US Census data, especially the American Community
+Survey. There's also [censusxy](https://cran.r-project.org/web/packages/censusxy/vignettes/censusxy.html)
+for geocoding from the Census Bureau. I did a post which I think is a pretty
+good example of a [novice using tidycensus to explore census data](https://www.johngoldin.com/2019/04/new-haven-census-and-r/).
+
+A number of government entities use a commercial package called [Socrata](https://www.tylertech.com/products/socrata/open-data-citizen-engagement)
+to make data available to the public. I use the [RSocrata](https://github.com/Chicago/RSocrata) package to retrieve
+data both from [data.ct.gov](https://data.ct.gov) and [data.cdc.gov](https://data.cdc.gov). 
+
+On another occasion I had fun playing
+with Twitter data fetched via the [twitteR](https://cran.r-project.org/web/packages/twitteR/twitteR.pdf) or [rtweet](https://docs.ropensci.org/rtweet/) packages. Both access the 
+Twitter API. 
+
+A widely used source of economic data is the [FRED database](https://fred.stlouisfed.org/), which in R
+can be accessed via the [fredr](http://sboysel.github.io/fredr/articles/fredr.html)
+package. I suspect that to get 
+[Current Population Survey Data](https://fred.stlouisfed.org/categories/12) 
+one could do better
+with FRED than with the source agencies (Census Bureau and BLS). The same
+is probably true for many other measures. As an example of the wider world of API's
+beyond R, see their list of 
+[FRED toolkits](https://fred.stlouisfed.org/docs/api/fred/#Toolkits)
+for many computer languages.
+
+If an R package is not available, it may still be possible to use a particular
+API. For example, I was able to follow an example presented by [Hadley Wickham]([examples](https://github.com/hadley/vis-eda/blob/master/vis-eda.pdf) to
+use the TripIt API to retrieve details of my travels that were stored in TripIt.
+I used flight records to identify when I was out of the Eastern Time Zone so that
+I could [adjust timestamps](https://www.johngoldin.com/2020/02/apple-health-export-part-i/) 
+of data that I retrieved from the Apple Health Export. 
+One of my early efforts was to [retrieve photos I stored in Flickr](https://www.johngoldin.com/2016/07/flickr_api/) via the Flickr API.
+
+When you are using an API directly (i.e., not via an R package) you may
+quickly end up lost amidst technical details. 
+One may hear terms like [REST or SOAP](https://raygun.com/blog/soap-vs-rest-vs-json/) that seem mysterious.
+Or you may have to cope with data formats such as JSON or XML. I've had success with the [jsonlite](https://cran.r-project.org/web/packages/jsonlite/vignettes/json-aaquickstart.html) package
+to fetch JSON data. XML data is more of a challenge for me, and there are several
+XML related R packages.
+
+```{r libd, message = FALSE, warning = FALSE, echo = FALSE}
+library(tidyverse)
+library(lubridate)
+library(kableExtra)
+library(janitor)
+library(knitr)
+library(scales)
+path_saved_export <- "~/Dropbox/Programming/R_Stuff/john_vitals/Apple-Health-Data/"
+path_to_healthexport1 <- "~/Documents/R_local_repos/applehealth1/R/"
+```
+```{r load_health_df, message = FALSE, warning = FALSE, echo = FALSE, cache = TRUE}
+load(paste0(path_saved_export,"save_processed_export.RData"))
+```
+### Apple Health Export
+
+#### Key R Code That Imports the Apple Health Export
+
+```{r eval = FALSE}
+library(tidyverse)
+library(XML)
+unzip("~/Downloads/export.zip", exdir = "~/Downloads", overwrite = TRUE)
+# Note that when unzipped, the resulting folder can be HUGE!'
+# In my case, over a gigabyte. (XML is a verbose format.) I always
+# delete the folder right after I import it.
+health_xml <- xmlParse("~/Downloads/apple_health_export/export.xml")
+# takes about 70 seconds on my iMac
+health_df <- XML:::xmlAttrsToDataFrame(health_xml["//Record"], 
+                                       stringsAsFactors = FALSE) %>%
+  as_tibble() %>% mutate(value = as.numeric(value))
+activity_df <- XML:::xmlAttrsToDataFrame(health_xml["//ActivitySummary"], 
+                                         stringsAsFactors = FALSE) %>% 
+  as_tibble()
+workout_df <-  XML:::xmlAttrsToDataFrame(health_xml["//Workout"], 
+                                         stringsAsFactors = FALSE) %>% 
+  as_tibble
+clinical_df <- XML:::xmlAttrsToDataFrame(health_xml["//ClinicalRecord"]) %>% 
+  as_tibble()
+```
+
+### Frequency of Data by Type
+
+Data from Apple Watch since October 2017, iPhone since December 2014.    
+
+```{r type_table, echo = FALSE}
+
+health_df %>% 
+  tabyl(type) %>% 
+  arrange(desc(n)) %>% 
+  janitor::adorn_totals("row") %>% # do column total after arrange
+  mutate(percent = round(percent, 3),
+    percent = scales::percent(percent)) %>% 
+  kable(format.args = list(decimal.mark = " ", big.mark = ","),
+        align = c("lrr"),
+        # table.attr='class="myTable"', 
+        caption = "Frequency Data by Type", format = "html") %>% 
+  kable_styling()
+        # caption = "Frequency Data by Category")
+```

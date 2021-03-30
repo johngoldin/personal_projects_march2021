@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Personal Projects</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="John Goldin" />
+    <script src="slides_xaringan_files/header-attrs/header-attrs.js"></script>
+    <script src="slides_xaringan_files/kePrint/kePrint.js"></script>
+    <link href="slides_xaringan_files/lightable/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Personal Projects
+### John Goldin
+### Friday, March 19
+
+---
+
+
+
+
+
+
+&lt;br&gt;&lt;br&gt;
+### Motto for this talk:
+&lt;br&gt;
+
+# What can you do when you're retired...
+
+--
+
+# ...anything you want
+
+---
+### Topics
+
+### Having a personal presence on the web
+
+### An abundance of data via API's
+
+### My current deep dive into the Apple Health Export
+
+---
+## Having a Presence on the Web
+### Why?
+
+####"Publication precipitates reality." -- Lila Freedman, former editor of the Yale Blue Book
+#####My blog: [johngoldin.com](https://www.johngoldin.com)
+--
+
+####Feeling part of a larger world
++ Google [American walker in Britain](https://www.google.com/search?q=American+walker+in+britain)
++ Google ["Apple Health Export"](https://www.google.com/search?q=%22apple+health+export%22)
+--
+
+####Professional visibility (not so relevant for a retiree, and maybe a risk for others)
+--
+
+###Caveats:
+
+####Web is very public: most of your Yale work is, at best, semi-private
+
+---
+## Publishing to the Web
+
+I've created some notes to accompany this talk. They are available at    
+
+https://goldin-projects-2021.netlify.app/
+
+The notes point you to a video by Alison Hill &amp; Desirée De Leon that describe a
+number of ways to use RMarkdown to publish to the web. The first and simplest
+technique was used to create the notes page. 
+
+1. Knit an RMarkdown document 
+2. Sign into Netlify.com 
+1. Drag the folder containing the project onto the deploy
+page in Netlify
+
+When first deployed, Netlify creates an
+arbitray name for the URL. But I have the option to change it,
+provided I can supply a name that hasn't already been used.
+
+There are lots of other ways to have a presence on the Web,
+such as LinkedIn, Twitter, Instagram, Flickr, and so on.
+
+---
+## Where To Find Some Data
+
+### Getting data via web API's
+
++ Connecticut and CDC [Covid-19 data](https://data.ct.gov/browse?tags=covid-19) (via RSocrata)
+
+
+```r
+dph_counties &lt;- read.socrata("https://data.ct.gov/resource/bfnu-rgqt.json",
+                            app_token = Sys.getenv("CTDATA_APP1_TOKEN")) %&gt;%
+  as_tibble() %&gt;%
+  rename(cases = totalcases, deaths = totaldeaths) %&gt;%
+  mutate(date = as_date(dateupdated),
+         cases = as.numeric(cases), deaths = as.numeric(deaths),
+         tests = NA_real_, tests_positive = NA_real_,
+         hospital = as.numeric(hospitalization),
+         confirmedcases = as.numeric(confirmedcases),
+         confirmeddeaths = as.numeric(confirmeddeaths),
+         probablecases = as.numeric(probablecases),
+         probabledeaths = as.numeric(probabledeaths)) %&gt;%
+  select(-dateupdated, -hospitalization)
+```
+
+---
+## An API is much easier to use if there is an R package that manages it
+
+Some examples:
+
+US Census: [tidycensus](https://walker-data.com/tidycensus/) 
+and [tigris](https://github.com/walkerke/tigris)
+
+Twitter: [twitteR](https://cran.r-project.org/web/packages/twitteR/twitteR.pdf) or [rtweet](https://docs.ropensci.org/rtweet/)
+
+[FRED](https://fred.stlouisfed.org/) economic stats: [fredr](http://sboysel.github.io/fredr/articles/fredr.html)
+
+
+More links in the notes at [goldin-projects-2021.netlify.app](https://goldin-projects-2021.netlify.app/)
+
+
+
+
+---
+#### I don't need no stinkin' guvment databases to satisfy my data anlysis habit.
+
+#### I've got almost three million rows of data in my pocket!
+
+--
+
+I did a [blog post](https://johngoldin.com/2020/02/apple-health-export-part-i/) 
+last winter describes how to export Apple Health Export and load it into R.
+
+---
+### What's in the Apple Health Export dataset?
+
+.pull-left[
+
+&lt;table class="table" style="margin-left: auto; margin-right: auto;"&gt;
+&lt;caption&gt;Frequency Data by Category&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; category &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; n &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; percent &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Energy &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1,483,322 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 50% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Heart Rate &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 514,203 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 17% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Distance &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 417,707 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 14% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Steps &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 240,152 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Exercise &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 190,119 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Dietary &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 72,541 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Mobility &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 25,497 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Audio &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 24,593 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Blood Pressure &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8,688 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Sleep &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5,978 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+.pull-right[ 
+&lt;table class="table" style="margin-left: auto; margin-right: auto;"&gt;
+&lt;caption&gt;Frequency Data by Category&lt;/caption&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; category &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; n &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; percent &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Oxygen Saturation &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2,962 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Resting Heart Rate &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1,318 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Body Metric &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 659 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; VO2Max &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 489 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Mindful &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 145 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Symptoms &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Times Fallen &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; ECG &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Unknown &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0% &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Total &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2,988,379 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 100% &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+&lt;br&gt;
+More detail about types of data shown in the notes at [goldin-projects-2021.netlify.app](https://goldin-projects-2021.netlify.app/)
+
+``` 
+
+
+
+
+
+---
+&lt;img src="slides_xaringan_files/figure-html/unnamed-chunk-1-1.png" width="100%" /&gt;
+
+---
+&lt;img src="slides_xaringan_files/figure-html/unnamed-chunk-2-1.png" width="100%" /&gt;
+
+---
+&lt;img src="slides_xaringan_files/figure-html/unnamed-chunk-3-1.png" width="100%" /&gt;
+---
+&lt;img src="slides_xaringan_files/figure-html/unnamed-chunk-4-1.png" width="100%" /&gt;
+
+
+---
+&lt;img src="slides_xaringan_files/figure-html/unnamed-chunk-5-1.png" width="100%" /&gt;
+
+---
+&lt;img src="slides_xaringan_files/figure-html/unnamed-chunk-6-1.png" width="100%" /&gt;
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current%",
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9",
+"countIncrementalSlides": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

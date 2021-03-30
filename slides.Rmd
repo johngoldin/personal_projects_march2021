@@ -1,0 +1,88 @@
+---
+title: "Personal Projects"
+author: "John Goldin"
+date: "3/16/2021"
+output: 
+  ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Motto for this presentation {.build}
+
+What can you do when you're retired...
+
+...anything you want
+
+## Topics
+
+Having a personal presence on the web
+
+An abundance of data via API's
+
+My current deep dive into the Apple Health Export
+
+## Having a Presence on the Web {.build}
+
+Why?
+
++ "Publication precipitates reality." -- Lila Freedman, former editor of the Yale Blue Book
+
++ Feeling part of a larger world
+
+  + Google [American walker in Britain](https://www.google.com/search?q=American+walker+in+britain)
+  
+  + Google ["Apple Health Export"](https://www.google.com/search?q=%22apple+health+export%22)
+
++ Professional visibility (not so relevant for a retiree, and maybe a double-edged sword)
+  
+Me: [johngoldin.com](https://www.johngoldin.com)
+
+Caveats:
+
++ Web is very public: most of your Yale work is, at best, semi-private
+
+## Publishing to the Web
+
+I've created some notes to accompany this talk. They are available at
+
+https://goldin-projects-2021.netlify.app/
+
+The notes point you to a video by Alison Hill & Desirée De Leon that describe a
+number of ways to use RMarkdown to publish to the web. The first and simplest
+technique was used to create the notes page.
+
+## Where To Find Some Data
+
+### Getting data via web API's
+
++ Connecticut and CDC [Covid-19 data](https://data.ct.gov/browse?tags=covid-19) (via RSocrata)
+
+```{r socrata_example, eval = FALSE, echo = TRUE}
+dph_counties <- read.socrata("https://data.ct.gov/resource/bfnu-rgqt.json",
+                            app_token = Sys.getenv("CTDATA_APP1_TOKEN")) %>%
+  as_tibble() %>%
+  rename(cases = totalcases, deaths = totaldeaths) %>%
+  mutate(date = as_date(dateupdated),
+         cases = as.numeric(cases), deaths = as.numeric(deaths),
+         tests = NA_real_, tests_positive = NA_real_,
+         hospital = as.numeric(hospitalization),
+         confirmedcases = as.numeric(confirmedcases),
+         confirmeddeaths = as.numeric(confirmeddeaths),
+         probablecases = as.numeric(probablecases),
+         probabledeaths = as.numeric(probabledeaths)) %>%
+  select(-dateupdated, -hospitalization)
+```
+
+## An API is much easier to use if there is an R package that manages it
+
+Some examples:
+
+US Census: [tidycensus](https://walker-data.com/tidycensus/) 
+and [tigris](https://github.com/walkerke/tigris)
+
+Twitter: [twitteR](https://cran.r-project.org/web/packages/twitteR/twitteR.pdf) or [rtweet](https://docs.ropensci.org/rtweet/)
+
+[FRED](https://fred.stlouisfed.org/) economic stats: [fredr](http://sboysel.github.io/fredr/articles/fredr.html)
